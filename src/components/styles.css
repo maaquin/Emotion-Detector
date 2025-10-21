@@ -1,0 +1,39 @@
+.dashboard-container {
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2em;
+}
+
+.video {
+    border: solid 2px #000;
+    position: relative;
+    height: 70%;
+    aspect-ratio: 4/3;
+}
+
+.video video {
+    height: 100%;
+    width: 100%;
+    z-index: 1;
+}
+
+.video canvas {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    left: 0;
+}
+
+button {
+    font-size: 1.5em;
+    transition: all .3s;    
+}
+
+button:hover {
+    scale: 110%;
+    cursor: pointer;
+}
