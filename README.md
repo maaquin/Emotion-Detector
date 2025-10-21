@@ -10,7 +10,7 @@ Un proyecto construido con **TensorFlow.js**, **MediaPipe FaceMesh** y **React**
 **Emotion Detector** es un proyecto de detección de emociones faciales basado en aprendizaje profundo.  
 El modelo fue entrenado con el dataset **FER2013**, procesando imágenes de rostros para clasificar emociones humanas en siete categorías:  
 
-😐 Neutral · 😀 Feliz · 😢 Triste · 😠 Enojado · 😮 Sorprendido · 😨 Miedo · 🤢 Asco  
+😐 Neutral · 😀 Feliz · 😢 Triste · 😠 Enojado · 😮 Sorprendido · 😨 Miedo · 🤢 Desagrado  
 
 El flujo principal combina dos componentes:
 
@@ -27,15 +27,13 @@ El flujo principal combina dos componentes:
 | IA / ML | TensorFlow (Python) · TensorFlow.js |
 | Visión por computadora | MediaPipe FaceMesh |
 | Preprocesamiento | NumPy · PIL (Python Imaging Library) |
-| Backend opcional | Node.js (para despliegues locales o APIs auxiliares) |
-
 ---
 
 ## 🧩 Cómo funciona
 
 ### Entrenamiento del modelo (Python)
 
-- Se usó el dataset **FER2013** con imágenes de 48x48 píxeles en escala de grises.  
+- Se usó el dataset **FER-2013** con imágenes de 48x48 píxeles en escala de grises.  
 - El modelo es una red neuronal densa: `Dense(128) → Dense(64) → Dense(7, softmax)`  
 - Tras el entrenamiento, se exportó con `model.export("emotion_model")` para su uso en TensorFlow.js.
 
