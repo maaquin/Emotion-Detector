@@ -62,10 +62,21 @@
 
 .btn {
     aspect-ratio: 1;
+    width: auto;
+    height: auto;
+    flex: 1;
     display: flex;
     justify-content: center;
     align-items: center;
     padding: 0;
+}
+
+@supports not (aspect-ratio: 1) {
+  .btn::before {
+    content: "";
+    display: block;
+    padding-bottom: 100%; /* cuadrado */
+  }
 }
 
 .expand {
@@ -193,5 +204,10 @@
         gap: 1em;
         justify-content: start;
         padding-top: 3em;
+    }
+
+    .camara {
+        border-radius: 10px;
+        font-size: 1rem;
     }
 }
