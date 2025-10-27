@@ -58,12 +58,12 @@
     flex-direction: row;
     gap: 5px;
     height: 70%;
+    align-items: center;
 }
 
 .btn {
-    aspect-ratio: 1;
-    width: auto;
-    height: auto;
+    height: 1.8em;
+    width: 1.8em;
     flex: 1;
     display: flex;
     justify-content: center;
