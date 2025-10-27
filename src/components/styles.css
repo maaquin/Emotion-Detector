@@ -6,34 +6,169 @@
     align-items: center;
     justify-content: center;
     gap: 2em;
+    background-color: #567577;
 }
 
-.video {
-    border: solid 2px #000;
-    position: relative;
-    height: 70%;
+.window, .expanded-window {
+    display: flex;
+    flex-direction: column;
+    gap: .5em;
+    align-items: center;
+    background-color: #c3c3c5;
+    border-top: #e5e5e7 solid 5px;
+    border-left: #e5e5e7 solid 5px;
+    border-bottom: #6e6e70 solid 5px;
+    border-right: #6e6e70 solid 5px;
+}
+
+.window {
+    height: 75%;
     aspect-ratio: 4/3;
 }
 
-.video video {
+.expanded-window {
     height: 100%;
     width: 100%;
-    z-index: 1;
+    box-sizing: border-box;
+}
+
+.header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    height: 2em;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0 .5em;
+
+    background-color: #13034e;
+}
+
+.header h1 {
+    font-size: 1em;
+    font-weight: 500;
+    color: #fff;
+    margin-left: .5em;
+}
+
+.btns {
+    display: flex;
+    flex-direction: row;
+    gap: 5px;
+    height: 70%;
+}
+
+.btn {
+    aspect-ratio: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0;
+}
+
+.expand {
+    border: 2px solid #000;
+    border-top: 4px solid #000;
+    height: 40%;
+    width: 60%;
+}
+
+.close {
+    position: relative;
+    width: 80%;
+    height: 80%;
+}
+
+.close::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100%;
+    height: 3px;
+    background-color: #000;
+    transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.close::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100%;
+    height: 3px;
+    background-color: #000;
+    transform: translate(-50%, -50%) rotate(-45deg);
+}
+
+.video {
+    height: calc(100% - 4em);
+    width: calc(100% - 1.5em);
+    position: relative;
+    overflow: hidden;
+    border: solid 4px #6e6e70;
+}
+
+.video video {
+    position: absolute;
+    left: 1;
+    height: 100%;
+    width: 100%;
+    z-index: 0;
 }
 
 .video canvas {
     position: absolute;
     height: 100%;
     width: 100%;
+    left: 1;
+    background: transparent;
+}
+
+.no_camera {
+    position: absolute;
+    height: 100%;
+    width: 100%;
     left: 0;
+    top: 0;
+    background: linear-gradient(to bottom, #fff, #fff, #333);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2em;
+    z-index: 2;
 }
 
-button {
-    font-size: 1.5em;
-    transition: all .3s;    
+.no_camera span {
+    font-size: 3em;
+    font-style: italic;
+    text-align: center;
 }
 
-button:hover {
-    scale: 110%;
-    cursor: pointer;
+.no_camera img {
+    height: 40%;
+    width: 30%;
+}
+
+.camara {
+    position: absolute;
+    border-radius: 15px;
+    font-size: 1.5rem;
+    transition: all .3s;
+    background: rgba(97, 96, 92, 0.279);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    color: #fff;   
+    border: none;
+    padding: .5em;
+    z-index: 3;
+    bottom: .5em;
+    right: .5em;
+}
+
+.camara:hover {
+    background: rgba(255, 255, 255, 0.279);
+    scale: 105%;
 }

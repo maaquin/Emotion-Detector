@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { FaceMesh } from "@mediapipe/face_mesh";
 import { Camera } from "@mediapipe/camera_utils";
+
+import no_camera from "../assets/no_video.png";
+import scalerParams from '../../tfjs_model/scaler.json';
 import "./styles.css";
 
 export const Dashboard = () => {
@@ -11,6 +14,7 @@ export const Dashboard = () => {
 
     const [isCameraOn, setIsCameraOn] = useState(false);
     const [isFaceMeshOn, setIsFaceMeshOn] = useState(false);
+    const [isExpand, setIsExpand] = useState(false);
 
     const [model, setModel] = useState(null);
 
@@ -82,24 +86,32 @@ export const Dashboard = () => {
                 const width = maxX - minX;
                 const height = maxY - minY;
 
-                canvasCtx.strokeStyle = "rgba(201, 7, 36, 0.88)";
+                canvasCtx.strokeStyle = "#fff";
                 canvasCtx.lineWidth = 3;
                 canvasCtx.strokeRect(minX, minY, width, height);
 
                 if (model) {
-                    const tensor = landmarksToImageTensor(landmarks);
+                    const tensor = landmarksToTensor(landmarks);
                     const prediction = model.predict(tensor);
                     const probs = prediction.arraySync()[0];
 
-                    // Obtener la emoción con mayor probabilidad
                     const emotions = ['neutral', 'happy', 'sad', 'angry', 'surprise', 'fear', 'disgust'];
-                    const maxIndex = probs.indexOf(Math.max(...probs));
-                    const emotion = emotions[maxIndex];
 
-                    // Dibujar la emoción en la cara
+                    // Obtener las dos emociones con mayores probabilidades
+                    const maxIndex = probs.indexOf(Math.max(...probs));
+                    const maxEmotion = emotions[maxIndex];
+                    const maxPercent = Math.round(probs[maxIndex] * 100);
+
+                    const second = Math.max(...probs.filter(v => v !== probs[maxIndex]));
+                    const secondIndex = probs.indexOf(second);
+                    const secondEmotion = emotions[secondIndex];
+                    const secondPercent = Math.round(probs[secondIndex] * 100);
+
+                    // Dibujar la emoción en la cara 
                     canvasCtx.font = "20px Arial";
-                    canvasCtx.fillStyle = "red";
-                    canvasCtx.fillText(emotion, minX, minY - 10);
+                    canvasCtx.fillStyle = "#fff";
+                    canvasCtx.fillText(`${maxEmotion}: ${maxPercent}%`, minX, minY - 10);
+                    canvasCtx.fillText(`${secondEmotion}: ${secondPercent}%`, minX, minY - 10 - 18);
 
                     tensor.dispose();
                     prediction.dispose();
@@ -116,40 +128,9 @@ export const Dashboard = () => {
     }, [isFaceMeshOn, model]);
 
     function landmarksToTensor(landmarks) {
-        const data = [];
-        let flat = landmarks.flatMap(p => [p.x, p.y, p.z]);
-        while (flat.length < 2304) flat.push(0);
-        for (let i = 0; i < landmarks.length; i++) {
-            data.push(landmarks[i].x);
-            data.push(landmarks[i].y);
-        }
-        return tf.tensor([data]); // [1, 936]
-    }
-
-    function landmarksToImageTensor(landmarks) {
-        // Crear un canvas virtual de 48x48
-        const canvas = document.createElement("canvas");
-        canvas.width = 48;
-        canvas.height = 48;
-        const ctx = canvas.getContext("2d");
-        ctx.fillStyle = "black";
-        ctx.fillRect(0, 0, 48, 48);
-
-        // Dibujar landmarks
-        ctx.fillStyle = "white";
-        for (const point of landmarks) {
-            const x = Math.floor(point.x * 48);
-            const y = Math.floor(point.y * 48);
-            ctx.fillRect(x, y, 1, 1);
-        }
-
-        // Obtener datos de imagen
-        const imgData = ctx.getImageData(0, 0, 48, 48);
-        const pixels = Array.from(imgData.data)
-            .filter((_, i) => i % 4 === 0) // Tomar solo canal R
-            .map(v => v / 255); // Normalizar
-
-        return tf.tensor2d([pixels]);
+        const data = landmarks.flatMap(p => [p.x, p.y]);
+        const normalized = data.map((v, i) => (v - scalerParams.mean[i]) / scalerParams.scale[i]);
+        return tf.tensor([normalized]); // [1, 936]
     }
 
     // 🔘 Alternar cámara
@@ -173,34 +154,46 @@ export const Dashboard = () => {
         }
     };
 
-    const toggleFaceMesh = () => {
-        setIsFaceMeshOn((prev) => !prev);
-    };
-
     return (
         <div className="dashboard-container">
-            <h1>Detección de emociones</h1>
-            <div className="video">
+            <div className={isExpand ? 'expanded-window' : 'window'}>
+                <div className="header">
+                    <h1>Detección de emociones</h1>
+                    <div className="btns">
+                        <button className="btn" onClick={() => setIsExpand(prev => !prev)}>
+                            <div className="expand"/>
+                        </button>
+                        <button className="btn" onClick={() => window.location.href = 'https://www.google.com'}>
+                            <div className="close"/>
+                        </button>
+                    </div>
+                </div>
+                <div className='video'>
+                    <video
+                        ref={videoRef}
+                        autoPlay
+                        playsInline
+                        muted
+                        className="rounded-2xl shadow-lg w-[640px] h-[480px] transform -scale-x-100"
+                    />
+                    <canvas
+                        ref={canvasRef}
+                        width="640"
+                        height="480"
+                        className="absolute top-0 left-0 rounded-2xl"
+                    />
 
-                <video
-                    ref={videoRef}
-                    autoPlay
-                    playsInline
-                    muted
-                    className="rounded-2xl shadow-lg w-[640px] h-[480px] transform -scale-x-100"
-                />
-                <canvas
-                    ref={canvasRef}
-                    width="640"
-                    height="480"
-                    className="absolute top-0 left-0 rounded-2xl"
-                />
-
-            </div>
-            <div>
-                <button onClick={toggleCamera}>
-                    camera
-                </button>
+                    {!isCameraOn &&
+                        <div className="no_camera">
+                            <span>Cámara apagada</span>
+                            <img src={no_camera} alt="no camera img" />
+                        </div>
+                    }
+                    
+                    <button className="camara" onClick={toggleCamera}>
+                        {isCameraOn ? 'apagar' : 'encender'}
+                    </button>
+                </div>
             </div>
         </div>
     );

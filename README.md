@@ -10,7 +10,7 @@ Un proyecto construido con **TensorFlow.js**, **MediaPipe FaceMesh** y **React**
 **Emotion Detector** es un proyecto de detección de emociones faciales basado en aprendizaje profundo.  
 El modelo fue entrenado con el dataset **FER2013**, procesando imágenes de rostros para clasificar emociones humanas en siete categorías:  
 
-😐 Neutral · 😀 Feliz · 😢 Triste · 😠 Enojado · 😮 Sorprendido · 😨 Miedo · 🤢 Desagrado  
+😐 Neutral · 😀 Feliz · 😢 Triste · 😠 Enojado · 😮 Sorprendido · 😨 Miedo · 🤢 Asco  
 
 El flujo principal combina dos componentes:
 
@@ -27,15 +27,19 @@ El flujo principal combina dos componentes:
 | IA / ML | TensorFlow (Python) · TensorFlow.js |
 | Visión por computadora | MediaPipe FaceMesh |
 | Preprocesamiento | NumPy · PIL (Python Imaging Library) |
+| Backend opcional | Node.js (para despliegues locales o APIs auxiliares) |
+
 ---
 
 ## 🧩 Cómo funciona
 
 ### Entrenamiento del modelo (Python)
 
-- Se usó el dataset **FER-2013** con imágenes de 48x48 píxeles en escala de grises.  
-- El modelo es una red neuronal densa: `Dense(128) → Dense(64) → Dense(7, softmax)`  
-- Tras el entrenamiento, se exportó con `model.export("emotion_model")` para su uso en TensorFlow.js.
+- Se usó el dataset **FER2013** con imágenes de 48x48 píxeles en escala de grises.
+- El modelo es una red neuronal densa con varias capas y dropout: `Dense(512) → Dropout(0.3) → Dense(256) → Dropout(0.3) → Dense(128) → Dense(7, softmax)`.
+- Se normalizaron los valores X/Y de los 468 landmarks usando StandardScaler antes del entrenamiento.
+- Tras entrenar hasta 100 épocas con early stopping y guardado del mejor modelo (best_emotion_model.h5), se exportó con `model.export("emotion_model")` para su uso en TensorFlow.js.
+- Durante el entrenamiento, la accuracy de validación osciló entre aproximadamente `0.55–0.56` y la loss entre `1.15–1.17`, reflejando la dificultad de diferenciar algunas emociones similares.
 
 ### Predicción en tiempo real (JavaScript)
 
@@ -73,10 +77,9 @@ npm run dev
 ## ✨ Notas
 - **Compatibilidad del navegador:** El proyecto funciona mejor en navegadores modernos que soporten WebGL 2.0 y WebAssembly.
 - **Rendimiento:** La predicción en tiempo real puede variar según la cámara y CPU/GPU del dispositivo. Para mejorar la velocidad se puede reducir la resolución del video o usar un modelo más ligero.
-- **Precisión del modelo:** El modelo actual es un MLP (red densa) entrenado con FER2013. Puede confundirse con emociones similares; usar CNNs mejoraría el reconocimiento.
+- **Precisión del modelo:** El modelo MLP entrenado con FER2013 alcanza una accuracy de test aproximada de `0.55–0.57` y una loss de `1.14–1.17`, lo que significa que puede confundirse entre emociones similares, especialmente con fear, disgust o surprise.
+- **Normalización de landmarks:** Los valores X/Y de los 468 puntos faciales fueron normalizados usando StandardScaler, lo que asegura que las coordenadas estén en la misma escala que durante el entrenamiento y mejora la consistencia de las predicciones en tiempo real.
 - **Seguridad y privacidad:** Todo el procesamiento ocurre en el navegador; las imágenes de video no se envían a servidores externos.
-- **Extensiones futuras:** Se puede integrar con sistemas de análisis de emociones, chatbots o apps de psicología/educación.
-- **Errores comunes:** Si model.predict lanza un error de shape, revisa que los landmarks se conviertan correctamente en un tensor de tamaño [1, 2304].
 
 ---
 
