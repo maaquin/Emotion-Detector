@@ -3,7 +3,6 @@ import { FaceMesh } from "@mediapipe/face_mesh";
 import { Camera } from "@mediapipe/camera_utils";
 
 import no_camera from "../assets/no_video.png";
-import scalerParams from '../../public/tfjs_model/scaler.json';
 import "./styles.css";
 
 export const Dashboard = () => {
@@ -17,12 +16,16 @@ export const Dashboard = () => {
     const [isExpand, setIsExpand] = useState(false);
 
     const [model, setModel] = useState(null);
+    const [scaler, setScaler] = useState(null);
 
     useEffect(() => {
         // Carga el modelo al montar el componente
         const loadModel = async () => {
-            const m = await tf.loadGraphModel("../../public/tfjs_model/model.json");
+            const m = await tf.loadGraphModel("/tfjs_model/model.json");
+            const response = await fetch("/tfjs_model/scaler.json");
+            const s = await response.json();
             setModel(m);
+            setScaler(s);
         };
         loadModel();
     }, []);
@@ -129,7 +132,7 @@ export const Dashboard = () => {
 
     function landmarksToTensor(landmarks) {
         const data = landmarks.flatMap(p => [p.x, p.y]);
-        const normalized = data.map((v, i) => (v - scalerParams.mean[i]) / scalerParams.scale[i]);
+        const normalized = data.map((v, i) => (v - scaler.mean[i]) / scaler.scale[i]);
         return tf.tensor([normalized]); // [1, 936]
     }
 
@@ -161,10 +164,10 @@ export const Dashboard = () => {
                     <h1>Detección de emociones</h1>
                     <div className="btns">
                         <button className="btn" onClick={() => setIsExpand(prev => !prev)}>
-                            <div className="expand"/>
+                            <div className="expand" />
                         </button>
                         <button className="btn" onClick={() => window.location.href = 'https://www.google.com'}>
-                            <div className="close"/>
+                            <div className="close" />
                         </button>
                     </div>
                 </div>
@@ -189,7 +192,7 @@ export const Dashboard = () => {
                             <img src={no_camera} alt="no camera img" />
                         </div>
                     }
-                    
+
                     <button className="camara" onClick={toggleCamera}>
                         {isCameraOn ? 'apagar' : 'encender'}
                     </button>
