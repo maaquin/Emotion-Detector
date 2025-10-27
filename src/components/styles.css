@@ -9,7 +9,8 @@
     background-color: #567577;
 }
 
-.window, .expanded-window {
+.window,
+.expanded-window {
     display: flex;
     flex-direction: column;
     gap: .5em;
@@ -149,7 +150,6 @@
 
 .no_camera img {
     height: 40%;
-    width: 30%;
 }
 
 .camara {
@@ -160,7 +160,7 @@
     background: rgba(97, 96, 92, 0.279);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
-    color: #fff;   
+    color: #fff;
     border: none;
     padding: .5em;
     z-index: 3;
@@ -171,4 +171,22 @@
 .camara:hover {
     background: rgba(255, 255, 255, 0.279);
     scale: 105%;
+}
+
+@media (max-width: 768px) {
+    .window {
+        width: 65%;
+        height: 50%;
+    }
+
+    .no_camera span {
+        font-size: 2em;
+        padding: 0 2em;
+    }
+
+    .no_camera {
+        gap: 1em;
+        justify-content: start;
+        padding-top: 3em;
+    }
 }
