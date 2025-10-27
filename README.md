@@ -70,7 +70,7 @@ npm run dev
 - Luego abre tu navegador en http://localhost:5173
 
 ## 🌐 Despliegue
-- Enlace al proyecto desplegado: [Por agregar]
+- Enlace al proyecto desplegado: [emotion-detector](https://emotion-detector-iota.vercel.app)
 
 ---
 
