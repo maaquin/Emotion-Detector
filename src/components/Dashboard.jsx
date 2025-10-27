@@ -3,7 +3,7 @@ import { FaceMesh } from "@mediapipe/face_mesh";
 import { Camera } from "@mediapipe/camera_utils";
 
 import no_camera from "../assets/no_video.png";
-import scalerParams from '../../tfjs_model/scaler.json';
+import scalerParams from '../../public/tfjs_model/scaler.json';
 import "./styles.css";
 
 export const Dashboard = () => {
@@ -21,7 +21,7 @@ export const Dashboard = () => {
     useEffect(() => {
         // Carga el modelo al montar el componente
         const loadModel = async () => {
-            const m = await tf.loadGraphModel("../../tfjs_model/model.json");
+            const m = await tf.loadGraphModel("../../public/tfjs_model/model.json");
             setModel(m);
         };
         loadModel();
