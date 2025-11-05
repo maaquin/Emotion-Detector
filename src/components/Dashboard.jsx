@@ -15,19 +15,28 @@ export const Dashboard = () => {
     const [isFaceMeshOn, setIsFaceMeshOn] = useState(false);
     const [isExpand, setIsExpand] = useState(false);
 
-    const [model, setModel] = useState(null);
-    const [scaler, setScaler] = useState(null);
+    const [emotionModel, setEmotionModel] = useState(null);
+    const [emotionScaler, setEmotionScaler] = useState(null);
+    const [genderModel, setGenderModel] = useState(null);
+    const [genderScaler, setGenderScaler] = useState(null);
 
     useEffect(() => {
         // Carga el modelo al montar el componente
-        const loadModel = async () => {
-            const m = await tf.loadGraphModel("/tfjs_model/model.json");
-            const response = await fetch("/tfjs_model/scaler.json");
-            const s = await response.json();
-            setModel(m);
-            setScaler(s);
+        const loadModels = async () => {
+            const em = await tf.loadGraphModel("/tfjs_model/emotion/model.json");
+            const er = await fetch("/tfjs_model/emotion/scaler.json");
+            const es = await er.json();
+
+            const gm = await tf.loadGraphModel("/tfjs_model/gender/model.json");
+            const gr = await fetch("/tfjs_model/gender/scaler.json");
+            const gs = await gr.json();
+
+            setEmotionModel(em);
+            setEmotionScaler(es);
+            setGenderModel(gm);
+            setGenderScaler(gs);
         };
-        loadModel();
+        loadModels();
     }, []);
 
 
@@ -93,31 +102,43 @@ export const Dashboard = () => {
                 canvasCtx.lineWidth = 3;
                 canvasCtx.strokeRect(minX, minY, width, height);
 
-                if (model) {
+                if (emotionModel && genderModel) {
                     const tensor = landmarksToTensor(landmarks);
-                    const prediction = model.predict(tensor);
-                    const probs = prediction.arraySync()[0];
+
+                    const predictionEmotion = emotionModel.predict(tensor);
+                    const probsEmotions = predictionEmotion.arraySync()[0];
+
+                    const predictionGender = genderModel.predict(tensor);
+                    const probsGender = predictionGender.arraySync()[0];
 
                     const emotions = ['neutral', 'happy', 'sad', 'angry', 'surprise', 'fear', 'disgust'];
 
                     // Obtener las dos emociones con mayores probabilidades
-                    const maxIndex = probs.indexOf(Math.max(...probs));
+                    const maxIndex = probsEmotions.indexOf(Math.max(...probsEmotions));
                     const maxEmotion = emotions[maxIndex];
-                    const maxPercent = Math.round(probs[maxIndex] * 100);
+                    const maxPercent = Math.round(probsEmotions[maxIndex] * 100);
 
-                    const second = Math.max(...probs.filter(v => v !== probs[maxIndex]));
-                    const secondIndex = probs.indexOf(second);
+                    const second = Math.max(...probsEmotions.filter(v => v !== probsEmotions[maxIndex]));
+                    const secondIndex = probsEmotions.indexOf(second);
                     const secondEmotion = emotions[secondIndex];
-                    const secondPercent = Math.round(probs[secondIndex] * 100);
+                    const secondPercent = Math.round(probsEmotions[secondIndex] * 100);
 
-                    // Dibujar la emoción en la cara 
+                    // Obtener el Género más probable
+                    let gender;
+                    if (probsGender > 0.5) {
+                        gender = "Male";
+                    } else {
+                        gender = "Female";
+                    }
+
+                    // Dibujar la data en la cara 
                     canvasCtx.font = "20px Arial";
                     canvasCtx.fillStyle = "#fff";
-                    canvasCtx.fillText(`${maxEmotion}: ${maxPercent}%`, minX, minY - 10);
-                    canvasCtx.fillText(`${secondEmotion}: ${secondPercent}%`, minX, minY - 10 - 18);
+                    canvasCtx.fillText(`Emotion: ${maxEmotion} ${maxPercent}% - ${secondEmotion} ${secondPercent}%`, minX, minY - 10);
+                    canvasCtx.fillText(`Sex: ${gender}`, minX, minY - 10 - 18);
 
                     tensor.dispose();
-                    prediction.dispose();
+                    predictionEmotion.dispose();
                 }
             }
 
@@ -128,11 +149,11 @@ export const Dashboard = () => {
             // Limpieza al desmontar
             if (cameraRef.current) cameraRef.current.stop();
         };
-    }, [isFaceMeshOn, model]);
+    }, [isFaceMeshOn, emotionModel]);
 
     function landmarksToTensor(landmarks) {
         const data = landmarks.flatMap(p => [p.x, p.y]);
-        const normalized = data.map((v, i) => (v - scaler.mean[i]) / scaler.scale[i]);
+        const normalized = data.map((v, i) => (v - emotionScaler.mean[i]) / emotionScaler.scale[i]);
         return tf.tensor([normalized]); // [1, 936]
     }
 
